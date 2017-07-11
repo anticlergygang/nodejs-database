@@ -1,0 +1,23 @@
+{
+  "name": "nodejs-database",
+  "version": "1.0.0",
+  "description": "",
+  "main": "database.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anticlergygang/nodejs-database.git"
+  },
+  "author": "anticlergy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anticlergygang/nodejs-database/issues"
+  },
+  "homepage": "https://github.com/anticlergygang/nodejs-database#readme",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "mime-types": "^2.1.15"
+  }
+}

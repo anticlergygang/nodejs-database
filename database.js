@@ -1,4 +1,5 @@
 const fs = require('fs');
+const mime = require('mime-types');
 const readFilePromise = (path, encoding = 'utf8') => {
     return new Promise((resolve, reject) => {
         fs.readFile(path, encoding, (err, data) => {
@@ -12,44 +13,58 @@ const readFilePromise = (path, encoding = 'utf8') => {
 };
 const readdirPromise = path => {
     return new Promise((resolve, reject) => {
-        fs.readdir(path, (err, data) => {
+        let paths = [];
+        fs.readdir(path, (err, dirPaths) => {
             if (err) {
                 reject(err);
             } else {
-                resolve(data);
+                dirPaths.forEach(dirPath => {
+                    paths.push(`${path}/${dirPath}`);
+                });
+                resolve(paths);
             }
         });
     });
 };
 const statPromise = path => {
     return new Promise((resolve, reject) => {
-        fs.stat(path, (err, stats) => {
+        fs.stat(path, (err, pathStats) => {
             if (err) {
                 reject(err);
             } else {
-                stats.filename = path;
-                resolve(stats);
+                pathStats.path = path;
+                if (pathStats.isDirectory()) {
+                    pathStats.kind = 'directory';
+                } else if (pathStats.isFile()) {
+                    pathStats.kind = 'file';
+                    pathStats.type = mime.lookup(path);
+                } else {
+                    reject('statPromise error');
+                }
+                resolve(pathStats);
             }
         });
     });
 };
-const getPathsFileStats = path => {
-    readdirPromise(path).then(files => {
-        let fileStatPromiseArray = [];
-        files.forEach(file => {
-            fileStatPromiseArray.push(statPromise(`${path}/${file}`));
+let dirToRead = [];
+dirToRead.push('database');
+const readdirRecursive = () => {
+    readdirPromise(dirToRead.pop()).then(paths => {
+        let fileStats = [];
+        paths.forEach(path => {
+            fileStats.push(statPromise(path));
         });
-        return Promise.all(fileStatPromiseArray);
-    }).then(stats => {
-        stats.forEach(stat => {
-            if (stat.isFile()) {
-                console.log(`${stat.filename} is a file.`)
-            } else if (stat.isDirectory()) {
-                console.log(`${stat.filename} is a directory.`)
-            } else {
-                console.log(`${stat.filename} is weird.`)
+        return Promise.all(fileStats);
+    }).then(fileStats => {
+        fileStats.forEach(fileStat => {
+            console.log(`${fileStat.path} is a ${fileStat.kind}`);
+            if (fileStat.kind == 'directory') {
+                dirToRead.push(fileStat.path);
             }
         });
+        while (dirToRead.length != 0) {
+            readdirRecursive();
+        }
     }).catch(err => {
         console.log(err);
     });
