@@ -38,16 +38,14 @@ const statPromise = (pathRoot, path) => {
                         'kind': 'directory'
                     }
                 } else {
-                    reject('path kind error');
+                    // reject('path kind error');
                 }
                 resolve(pathInfo);
             }
         });
     });
 };
-let directoriesLeft = [];
-let checkWalk = false;
-const walkDir = (dir) => {
+const walkDir = (dir, checkWalk = false, directoriesLeft = []) => {
     readdirPromise(dir).then(dirPaths => {
         dirPaths.forEach(pathInfo => {
             if (pathInfo.kind == 'directory') {
@@ -58,11 +56,11 @@ const walkDir = (dir) => {
             } else {}
         });
         if (directoriesLeft.length > 0) {
-            walkDir(directoriesLeft.pop());
+            let newDir = directoriesLeft.pop();
             if (directoriesLeft.length == 0) {
-                checkWalk = true;
+                walkDir(newDir, true, directoriesLeft);
             } else {
-                checkWalk = false;
+                walkDir(newDir, false, directoriesLeft);
             }
         } else if (directoriesLeft.length == 0 && checkWalk == true) {
             console.log('done');
