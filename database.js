@@ -46,8 +46,6 @@ const statPromise = path => {
         });
     });
 };
-let dirToRead = [];
-dirToRead.push('database');
 const readdirRecursive = () => {
     readdirPromise(dirToRead.pop()).then(paths => {
         let fileStats = [];
@@ -57,9 +55,11 @@ const readdirRecursive = () => {
         return Promise.all(fileStats);
     }).then(fileStats => {
         fileStats.forEach(fileStat => {
-            console.log(`${fileStat.path} is a ${fileStat.kind}`);
             if (fileStat.kind == 'directory') {
+                console.log(`'${fileStat.path}' is a '${fileStat.kind}'`);
                 dirToRead.push(fileStat.path);
+            } else {
+                console.log(`'${fileStat.path}' is a '${fileStat.kind}' of type '${fileStat.type}'`);
             }
         });
         while (dirToRead.length != 0) {
@@ -69,3 +69,6 @@ const readdirRecursive = () => {
         console.log(err);
     });
 };
+let dirToRead = [];
+dirToRead.push('database');
+readdirRecursive();
