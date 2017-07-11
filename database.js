@@ -38,7 +38,7 @@ const statPromise = (pathRoot, path) => {
                         'kind': 'directory'
                     }
                 } else {
-                    reject('file kind error');
+                    reject('path kind error');
                 }
                 resolve(pathInfo);
             }
@@ -46,21 +46,28 @@ const statPromise = (pathRoot, path) => {
     });
 };
 let directoriesLeft = [];
+let checkWalk = false;
 const walkDir = (dir) => {
     readdirPromise(dir).then(dirPaths => {
         dirPaths.forEach(pathInfo => {
             if (pathInfo.kind == 'directory') {
                 console.log(`Found directory '${pathInfo.path}'.`)
                 directoriesLeft.push(pathInfo.path);
-            } else {
-                console.log(`Found file '${pathInfo.path}' of type ${pathInfo.type}.`)
-            }
+            } else if (pathInfo.kind == 'file') {
+                console.log(`Found file '${pathInfo.path}' of type '${pathInfo.type}'.`)
+            } else {}
         });
-        while (directoriesLeft.length > 0) {
+        if (directoriesLeft.length > 0) {
             walkDir(directoriesLeft.pop());
+            if (directoriesLeft.length == 0) {
+                checkWalk = true;
+            } else {
+                checkWalk = false;
+            }
+        } else if (directoriesLeft.length == 0 && checkWalk == true) {
+            console.log('done');
         }
     }).catch(err => {
         console.log(err);
     });
 };
-walkDir('database');
